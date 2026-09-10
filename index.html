@@ -465,7 +465,6 @@
         multiple: q.respuestasCorrectas.length > 1,
         opciones: options,
         selected: options.map(() => false),
-        everWrong: false,
         locked: false,
         outcome: null
       };
@@ -481,7 +480,6 @@
       multiple: q.multiple,
       opciones: q.opciones.map(o => ({ text: o.text, isCorrect: o.isCorrect })),
       selected: q.opciones.map(() => false),
-      everWrong: false,
       locked: false,
       outcome: null
     }));
@@ -560,16 +558,6 @@
     }
 
     q.selected[optIndex] = input.checked;
-
-    const clickedCorrect = q.opciones[optIndex].isCorrect;
-
-    // La regla de puntaje sigue siendo la misma (marcar una opción
-    // incorrecta hace perder el punto de esa pregunta), pero ahora
-    // esto queda registrado en silencio: no se muestra ningún color,
-    // texto ni bloqueo hasta que se entregue el simulacro completo.
-    if (input.checked && !clickedCorrect){
-      q.everWrong = true;
-    }
 
     updateNavDot(qIndex);
     updateLiveScore();
@@ -685,15 +673,15 @@
     let score = 0;
 
     activeQuizData.forEach((q, qIndex) => {
-      const correctTotal = q.opciones.filter(o => o.isCorrect).length;
-      const correctSelected = q.opciones.filter((o,i) => o.isCorrect && q.selected[i]).length;
       const anySelected = q.selected.some(Boolean);
+      const anyWrongSelected = q.opciones.some((o, i) => q.selected[i] && !o.isCorrect);
+      const allCorrectSelected = q.opciones.every((o, i) => !o.isCorrect || q.selected[i]);
 
-      if (q.everWrong){
-        q.outcome = 'incorrect';
-      } else if (!anySelected){
+      if (!anySelected){
         q.outcome = 'incomplete';
-      } else if (correctSelected === correctTotal){
+      } else if (anyWrongSelected){
+        q.outcome = 'incorrect';
+      } else if (allCorrectSelected){
         q.outcome = 'correct';
       } else {
         q.outcome = 'incomplete';
