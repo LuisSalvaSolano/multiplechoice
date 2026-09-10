@@ -545,18 +545,11 @@
     const q = activeQuizData[qIndex];
     if (!q || q.locked) return;
 
-    // En preguntas de única respuesta, marcar una opción desmarca las demás
-    // (comportamiento de radio button, pero conservando el cuadrado visual).
-    if (!q.multiple && input.checked){
-      q.opciones.forEach((_, i) => {
-        if (i !== optIndex){
-          q.selected[i] = false;
-          const otherInput = el(`lbl-${qIndex}-${i}`).querySelector('input');
-          otherInput.checked = false;
-        }
-      });
-    }
-
+    // Se permite marcar tantas opciones como se quiera en TODAS las
+    // preguntas (sin forzar selección única), para que el comportamiento
+    // del formulario no delate si la pregunta tiene una o varias
+    // respuestas correctas. La calificación final se calcula igual,
+    // comparando el conjunto marcado contra el conjunto correcto.
     q.selected[optIndex] = input.checked;
 
     updateNavDot(qIndex);
